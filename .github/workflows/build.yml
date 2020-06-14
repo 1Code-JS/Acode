@@ -1,0 +1,26 @@
+name: Build APK
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codemirror
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: latest
+      - name: Install Cordova
+        run: npm i -g cordova
+      - name: Setup
+        run: npm run setup
+      - name: Build
+        run: npm run build android
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: acode-build
+          path: ~/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+          compression-level: 9

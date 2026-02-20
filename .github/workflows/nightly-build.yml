@@ -3,9 +3,9 @@
   name: Nightly Build
 
   on:
-    schedule:
+    # schedule:
       # Fire every day at 7:00am UTC (Roughly before EU workday and after US workday)
-      - cron: "0 7 * * *"
+    #   - cron: "0 7 * * *"
     push:
       tags:
         - nightly
@@ -54,7 +54,7 @@
     build:
       timeout-minutes: 60
       runs-on: ubuntu-latest
-      if: github.repository_owner == 'Acode-Foundation'
+      # if: github.repository_owner == 'Acode-Foundation'
 
       permissions:
 #        contents write is needed to create Nightly Releases.
@@ -116,7 +116,7 @@
 
         - name: Add keystore and build.json from secrets
           run: |
-            echo "${{ secrets.KEYSTORE_CONTENT }}" | base64 -d > $STORE_FILE_PATH
+            touch $STORE_FILE_PATH
             echo "${{ secrets.BUILD_JSON_CONTENT }}" | base64 -d > $BUILD_JSON_PATH
             echo "Keystore and build.json added successfully."
 

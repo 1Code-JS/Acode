@@ -68,7 +68,7 @@
          RELEASE_NOTES: ${{ env.RELEASE_NOTES }}
       steps:
         - name: Fast Fail if secrets are missing
-          if: ${{ env.KEYSTORE_CONTENT == '' || env.BUILD_JSON_CONTENT == '' }}
+          if: ${{ env.BUILD_JSON_CONTENT == '' }}
           env:
              KEYSTORE_CONTENT: ${{ secrets.KEYSTORE_CONTENT }} 
              BUILD_JSON_CONTENT: ${{ secrets.BUILD_JSON_CONTENT }} 
@@ -101,7 +101,7 @@
             # persists credentials locally if tagging and releases are not skipped.
             persist-credentials: ${{ ! inputs.skip_tagging_and_releases }}
             # ref: ${{ (inputs.is_PR && inputs.PR_NUMBER) && github.event.pull_request.head.sha || '' }}
-            ref: main
+            ref: plugin-esm-2
 
         - name: Set up Java 21
           uses: actions/setup-java@v4
@@ -190,11 +190,12 @@
             mv platforms/android/app/build/outputs/apk/debug/app-debug.apk /tmp/app-debug-fdroid.apk
         
         - name: Upload APK Artifact
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           if: ${{ !inputs.is_PR }}
           with:
             name: app-debug-fdroid-${{ env.GIT_COMMIT }}
             path: /tmp/app-debug-fdroid.apk
+            archive: false
 
         - name: remove keystore and build.json
           run: |
@@ -272,16 +273,3 @@
                    Preview Release for this, has been built.
          
                    [Click here to view that github actions build](https://github.com/${{ github.repository}}/actions/runs/${{ github.run_id }})
-             
-
-    community-release-notifier:
-      needs: build
-#      Run only if push tags, or triggered by a schedule
-      if: ${{ github.repository_owner == 'Acode-Foundation' && (contains(fromJSON('["push", "schedule"]'), github.event_name) || ! inputs.skip_tagging_and_releases) && needs.build.outputs.release_output_url }}
-      uses: Acode-Foundation/acode/.github/workflows/community-release-notifier.yml@main
-      with:
-         tag_name: ${{ needs.build.outputs.updated_version }}
-         url: ${{ needs.build.outputs.release_output_url }}
-         body: ${{ needs.build.outputs.RELEASE_NOTES }}
-      secrets:
-        DISCORD_WEBHOOK_RELEASE_NOTES: ${{ secrets.DISCORD_WEBHOOK_RELEASE_NOTES }}

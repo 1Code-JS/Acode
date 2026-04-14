@@ -349,14 +349,16 @@ class TouchSelectionMenuController {
 			{ x: event.clientX, y: event.clientY },
 			false,
 		);
-		this.#view.dispatch({
+		const selection = {
 			selection: EditorSelection.range(session.anchor, head),
 			userEvent: "select.extend",
-		});
+		};
+		this.#view.dispatch(selection);
 		this.#pendingShiftSelectionClick = {
 			x: event.clientX,
 			y: event.clientY,
 			timeStamp: event.timeStamp,
+			selection,
 		};
 		event.preventDefault();
 	}
@@ -383,6 +385,7 @@ class TouchSelectionMenuController {
 		if (!(target instanceof Node) || !this.#view.dom.contains(target))
 			return false;
 		if (this.#isIgnoredPointerTarget(target)) return false;
+		this.#view.dispatch(pending.selection);
 		return true;
 	}
 

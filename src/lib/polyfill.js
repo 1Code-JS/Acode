@@ -1,3 +1,19 @@
+// polyfill for Object.hasOwn
+
+(function () {
+	var oldHasOwn = Function.prototype.call.bind(Object.prototype.hasOwnProperty);
+	if (oldHasOwn(Object, "hasOwn")) return;
+	Object.defineProperty(Object, "hasOwn", {
+		configurable: true,
+		enumerable: false,
+		writable: true,
+		value: function hasOwn(obj, prop) {
+			return oldHasOwn(obj, prop);
+		},
+	});
+	Object.hasOwn.prototype = null;
+})();
+
 // automatically include credentials for acode.app API requests
 (function () {
 	const _fetch = window.fetch;
@@ -13,7 +29,7 @@
 
 (function (arr) {
 	arr.forEach(function (item) {
-		if (item.hasOwnProperty("prepend")) {
+		if (Object.hasOwn(item, "prepend")) {
 			return;
 		}
 		Object.defineProperty(item, "prepend", {
@@ -42,7 +58,7 @@
 
 (function (arr) {
 	arr.forEach(function (item) {
-		if (item.hasOwnProperty("closest")) {
+		if (Object.hasOwn(item, "closest")) {
 			return;
 		}
 		Object.defineProperty(item, "closest", {
@@ -67,7 +83,7 @@
 
 (function (arr) {
 	arr.forEach(function (item) {
-		if (item.hasOwnProperty("replaceWith")) {
+		if (Object.hasOwn(item, "replaceWith")) {
 			return;
 		}
 		Object.defineProperty(item, "replaceWith", {
@@ -106,7 +122,7 @@
 
 (function (arr) {
 	arr.forEach(function (item) {
-		if (item.hasOwnProperty("toggleAttribute")) {
+		if (Object.hasOwn(item, "toggleAttribute")) {
 			return;
 		}
 		Object.defineProperty(item, "toggleAttribute", {
@@ -151,3 +167,31 @@
 		};
 	}
 })();
+
+// polyfill for Promise.withResolvers
+
+if (!Object.hasOwn(Promise, "withResolvers")) {
+	Object.defineProperty(Promise, "withResolvers", {
+		configurable: true,
+		enumerable: false,
+		writable: true,
+		value: function withResolvers() {
+			var resolve, reject;
+			var promise = new this(function (_resolve, _reject) {
+				resolve = _resolve;
+				reject = _reject;
+			});
+			if (typeof resolve !== "function" || typeof reject !== "function") {
+				throw new TypeError(
+					"Promise resolve or reject function is not callable",
+				);
+			}
+			return {
+				promise: promise,
+				resolve: resolve,
+				reject: reject,
+			};
+		},
+	});
+	Promise.withResolvers.prototype = null;
+}
